@@ -1,4 +1,4 @@
 class Hostname < ActiveRecord::Base
 	validates :name, presence: true, uniqueness: { case_sensitive: false }
-  has_and_belongs_to_many :domain_name_system
+  has_and_belongs_to_many :domain_name_systems
 end
