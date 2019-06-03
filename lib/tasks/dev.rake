@@ -31,7 +31,7 @@ namespace :dev do
   task generate_hostnames: :environment do
     puts "Creating HOSTNAMES..."
 
-    hostnames = %w(lorem.com, ipsum.com, dolor.com, amet.com, sit.com)
+    hostnames = %w(lorem.com ipsum.com dolor.com amet.com sit.com)
 
     hostnames.each do |hostname|
       Hostname.create!(
@@ -46,7 +46,7 @@ namespace :dev do
   task generate_associate: :environment do
     puts "Associating DNS and Hostnames..."
 
-    hostnames_test = %w(lorem.com, ipsum.com, dolor.com, amet.com, sit.com)
+    hostnames_test = %w(lorem.com ipsum.com dolor.com amet.com sit.com)
 
     DomainNameSystem.all.each do |dns|
       hosts = hostnames_test.sample(rand(1..5))
