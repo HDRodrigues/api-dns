@@ -97,9 +97,84 @@ RSpec.describe 'API::V1::DomainNameSystems', type: :request do
         get api_v1_dns_path(exclude: 'sit.com')
 
         parsed_response = JSON.parse(response.body)
-        byebug
 
         expect(parsed_response["total_items"]).to be_eql(1)
+      end
+    end
+  end
+
+  describe 'POST /api/v1/dns' do
+    
+    context 'when the params is valide' do
+      let(:dns_params){ {:params => {:domain_name_system => {:ip => "1.1.1.1", :hostnames => 'amet.com,dolor.com'}}} } 
+      it 'returns status created' do
+        post "/api/v1/dns", dns_params 
+        expect(response).to have_http_status(:created)
+      end
+
+      it 'returns the dns saved' do
+        post "/api/v1/dns", dns_params
+        parsed_response = JSON.parse(response.body)
+
+        expect(parsed_response["id"]).to be_kind_of(Integer)
+        expect(parsed_response["ip"]).to be_eql("1.1.1.1")
+      end
+    end
+
+    context 'when the params has just dns' do
+      let(:dns_params){ {:params => { :domain_name_system => {:ip => "1.1.1.1"}}} } 
+
+      it 'returns status created' do
+        post "/api/v1/dns", dns_params
+        
+        expect(response).to have_http_status(:created)
+      end
+
+      it 'returns the dns saved' do
+        post "/api/v1/dns", dns_params
+        
+        parsed_response = JSON.parse(response.body)
+
+        expect(parsed_response["id"]).to be_kind_of(Integer)
+        expect(parsed_response["ip"]).to be_eql("1.1.1.1")
+      end
+    end
+
+    context 'when is not a valide ip' do
+      let(:dns_params){ {:params => { :domain_name_system => {:ip => "1.1.1"}}} } 
+      
+      it 'returns status unprocessable_entity' do
+        post "/api/v1/dns", dns_params
+        
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it 'returns an error message' do
+        post "/api/v1/dns", dns_params
+        parsed_response = JSON.parse(response.body)
+
+        expect(parsed_response['error']).to include('Ip address not allowed, please send a valide ip.')
+      end
+    end
+
+    context 'when ip is already taken' do
+      let(:dns_params){ {:params => { :domain_name_system => {:ip => "1.1.1.1"}}} } 
+      before do
+        FactoryBot.create(:domain_name_system, ip: "1.1.1.1")
+      end
+
+      it 'returns status unprocessable_entity' do
+        post "/api/v1/dns", dns_params
+        
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it 'returns an error' do
+        post "/api/v1/dns", dns_params
+        parsed_response = JSON.parse(response.body)
+
+        expect(parsed_response['error']).to include("The domain_name_system can't be saved due to validation errors.")
+        expect(parsed_response['details']).to include("Ip has already been taken")
       end
     end
   end
